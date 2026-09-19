@@ -3,8 +3,8 @@ import { conversationStatusLabels } from "../lib/labels";
 
 const toneByStatus: Record<ConversationStatus, "ok" | "warn" | "danger" | "pending" | "neutral"> = {
   Open: "ok",
-  Pending: "pending",
-  Resolved: "neutral",
+  WaitingCustomer: "pending",
+  WaitingTeam: "warn",
   Closed: "danger",
 };
 

@@ -14,8 +14,11 @@ namespace Philo.Infrastructure.Persistence.Repositories
             await _context.OrganizationUsers.FirstOrDefaultAsync(
                 m => m.OrganizationId == organizationId && m.UserId == userId, cancellationToken);
 
+        // Inclui o User para telas que precisam exibir nome/e-mail junto do vínculo
+        // (ex.: painel de login rápido da equipe em dev — ListStaffMembersQuery).
         public async Task<IReadOnlyList<OrganizationUser>> GetTeamAsync(long organizationId, CancellationToken cancellationToken = default) =>
             await _context.OrganizationUsers
+                .Include(m => m.User)
                 .Where(m => m.OrganizationId == organizationId)
                 .ToListAsync(cancellationToken);
 

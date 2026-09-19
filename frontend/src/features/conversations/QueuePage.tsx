@@ -12,12 +12,12 @@ import {
 import { useAuthStore } from "../../stores/authStore";
 import { Button, EmptyState, SelectField } from "../../ui";
 
-const STATUS_FILTERS = ["", "Open", "Pending", "Resolved", "Closed"] as const;
+const STATUS_FILTERS = ["", "Open", "WaitingCustomer", "WaitingTeam", "Closed"] as const;
 const STATUS_FILTER_LABELS: Record<(typeof STATUS_FILTERS)[number], string> = {
   "": "Todos",
   Open: "Abertas",
-  Pending: "Pendentes",
-  Resolved: "Resolvidas",
+  WaitingCustomer: "Aguardando cliente",
+  WaitingTeam: "Aguardando equipe",
   Closed: "Fechadas",
 };
 

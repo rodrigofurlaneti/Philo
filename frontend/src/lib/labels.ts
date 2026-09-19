@@ -2,8 +2,8 @@ import type { ConversationPurpose, ConversationStatus, Priority, ProductStatus, 
 
 export const conversationStatusLabels: Record<ConversationStatus, string> = {
   Open: "Aberta",
-  Pending: "Pendente",
-  Resolved: "Resolvida",
+  WaitingCustomer: "Aguardando cliente",
+  WaitingTeam: "Aguardando equipe",
   Closed: "Fechada",
 };
 

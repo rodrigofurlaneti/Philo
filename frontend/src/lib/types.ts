@@ -11,7 +11,7 @@ export type SessionResponse = {
 };
 
 export type ConversationPurpose = "Sales" | "Support";
-export type ConversationStatus = "Open" | "Pending" | "Resolved" | "Closed";
+export type ConversationStatus = "Open" | "WaitingCustomer" | "WaitingTeam" | "Closed";
 export type Priority = "Low" | "Normal" | "High" | "Urgent";
 
 export type ConversationSummary = {
@@ -74,3 +74,7 @@ export type Product = {
 };
 
 export type CreatedResponse = { id: number };
+
+/** Uso interno/dev — painel de login rápido da equipe (LoginPage). */
+export type OrganizationSummary = { id: number; name: string; status: string };
+export type StaffMember = { userId: number; displayName: string; email: string | null; role: Role };
