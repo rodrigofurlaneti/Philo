@@ -46,17 +46,19 @@ namespace Philo.Application.Messages.SendAttachmentMessage
         private readonly IParticipantAccessGuard _accessGuard;
         private readonly IMessageRepository _messages;
         private readonly IMessageAttachmentRepository _attachments;
+        private readonly IConversationRepository _conversations;
         private readonly IFileStorageService _storage;
         private readonly IAttachmentScanner _scanner;
         private readonly IUnitOfWork _unitOfWork;
 
         public SendAttachmentMessageHandler(
             IParticipantAccessGuard accessGuard, IMessageRepository messages, IMessageAttachmentRepository attachments,
-            IFileStorageService storage, IAttachmentScanner scanner, IUnitOfWork unitOfWork)
+            IConversationRepository conversations, IFileStorageService storage, IAttachmentScanner scanner, IUnitOfWork unitOfWork)
         {
             _accessGuard = accessGuard;
             _messages = messages;
             _attachments = attachments;
+            _conversations = conversations;
             _storage = storage;
             _scanner = scanner;
             _unitOfWork = unitOfWork;
@@ -112,6 +114,10 @@ namespace Philo.Application.Messages.SendAttachmentMessage
 
                 if (!message.HasRequiredAttachment)
                     return Result.Failure<long>(DomainErrors.Message.AttachmentRequired);
+
+                // Reflete de quem é a vez de responder (README não cobre; regra de produto da UI da fila).
+                conversation.RegisterMessageFrom(request.SenderId);
+                await _conversations.UpdateAsync(conversation, ct);
 
                 return Result.Success(message.Id);
             }, cancellationToken);

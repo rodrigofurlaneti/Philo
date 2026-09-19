@@ -17,7 +17,7 @@ const STATUS_FILTER_LABELS: Record<(typeof STATUS_FILTERS)[number], string> = {
   "": "Todos",
   Open: "Abertas",
   WaitingCustomer: "Aguardando cliente",
-  WaitingTeam: "Aguardando equipe",
+  WaitingTeam: "Aguardando atendente",
   Closed: "Fechadas",
 };
 

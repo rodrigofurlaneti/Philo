@@ -33,12 +33,16 @@ namespace Philo.Application.Messages.SendTextMessage
     {
         private readonly IParticipantAccessGuard _accessGuard;
         private readonly IMessageRepository _messages;
+        private readonly IConversationRepository _conversations;
         private readonly IUnitOfWork _unitOfWork;
 
-        public SendTextMessageHandler(IParticipantAccessGuard accessGuard, IMessageRepository messages, IUnitOfWork unitOfWork)
+        public SendTextMessageHandler(
+            IParticipantAccessGuard accessGuard, IMessageRepository messages,
+            IConversationRepository conversations, IUnitOfWork unitOfWork)
         {
             _accessGuard = accessGuard;
             _messages = messages;
+            _conversations = conversations;
             _unitOfWork = unitOfWork;
         }
 
@@ -70,8 +74,16 @@ namespace Philo.Application.Messages.SendTextMessage
             if (messageResult.IsFailure)
                 return Result.Failure<long>(messageResult.Error);
 
-            await _messages.AddAsync(messageResult.Value, cancellationToken);
-            return Result.Success(messageResult.Value.Id);
+            return await _unitOfWork.ExecuteInTransactionAsync(async ct =>
+            {
+                await _messages.AddAsync(messageResult.Value, ct);
+
+                // Reflete de quem é a vez de responder (README não cobre; regra de produto da UI da fila).
+                conversation.RegisterMessageFrom(request.SenderId);
+                await _conversations.UpdateAsync(conversation, ct);
+
+                return Result.Success(messageResult.Value.Id);
+            }, cancellationToken);
         }
 
         internal async Task<Result> ValidateReplyAsync(long organizationId, long conversationId, long replyToId, CancellationToken cancellationToken)

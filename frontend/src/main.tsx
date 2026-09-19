@@ -18,8 +18,8 @@ const queryClient = new QueryClient({
       staleTime: 10_000,
       refetchOnWindowFocus: true,
       retry: (failureCount, error) => {
-        // 401/404/409 não melhoram tentando de novo (AGENTS.md §4).
-        if (error instanceof ApiError && [401, 404, 409].includes(error.status)) return false;
+        // 401/403/404/409 não melhoram tentando de novo (AGENTS.md §4).
+        if (error instanceof ApiError && [401, 403, 404, 409].includes(error.status)) return false;
         return failureCount < 2;
       },
     },

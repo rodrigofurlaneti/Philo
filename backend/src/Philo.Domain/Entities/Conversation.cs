@@ -122,6 +122,20 @@ namespace Philo.Domain.Entities
                 LastActivityAt = at;
         }
 
+        /// <summary>
+        /// Reflete de quem é a vez de responder: cliente mandou => aguardando atendente;
+        /// atendente (ou qualquer outro participante) mandou => aguardando cliente. Encerrada não muda
+        /// (a mensagem já teria sido barreada por <see cref="IsClosed"/> antes de chegar aqui).
+        /// </summary>
+        public void RegisterMessageFrom(long senderId)
+        {
+            if (Status == ConversationStatus.Closed)
+                return;
+
+            Status = senderId == CustomerId ? ConversationStatus.WaitingTeam : ConversationStatus.WaitingCustomer;
+            Touch();
+        }
+
         private void Touch() => UpdatedAt = DateTime.UtcNow;
 
         public bool IsClosed => Status == ConversationStatus.Closed;

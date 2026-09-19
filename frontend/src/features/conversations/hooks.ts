@@ -44,7 +44,9 @@ export function useMyConversations() {
     queryKey: conversationsKeys.mine(userId),
     queryFn: () => api.getMyConversations(organizationId!),
     enabled: organizationId !== null,
-    staleTime: 10_000,
+    // A lista mostra o status, que o atendente muda do outro lado (AGENTS.md §4).
+    staleTime: 5_000,
+    refetchInterval: 8_000,
   });
 }
 
@@ -55,7 +57,9 @@ export function useQueue(status?: string) {
     queryKey: conversationsKeys.queue(userId, status),
     queryFn: () => api.getQueue(organizationId!, status),
     enabled: organizationId !== null,
-    staleTime: 10_000,
+    // Outros atendentes/clientes mudam a fila por fora desta aba (AGENTS.md §4).
+    staleTime: 5_000,
+    refetchInterval: 8_000,
   });
 }
 
@@ -66,7 +70,10 @@ export function useConversationDetails(conversationId: number | null) {
     queryKey: conversationsKeys.details(userId, conversationId ?? 0),
     queryFn: () => api.getConversationDetails(organizationId!, conversationId!),
     enabled: organizationId !== null && conversationId !== null,
-    staleTime: 60_000,
+    // Status (aguardando cliente/atendente) muda do outro lado (outra sessão); sem isso só
+    // atualiza no foco da aba ou depois de 60s (mesmo intervalo de useHistory, AGENTS.md §4).
+    staleTime: 5_000,
+    refetchInterval: 8_000,
   });
 }
 
