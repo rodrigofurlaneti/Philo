@@ -1,0 +1,104 @@
+﻿name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+        env:
+          # TODO: confirmar se o Philo usa Vite com essas mesmas variáveis
+          # (mesmo padrão do CloudShopping: API chamada por caminho relativo).
+          VITE_API_URL: /api
+          VITE_STATIC_URL: ${{ vars.VITE_STATIC_URL || 'http://191.234.174.58:8301' }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: philo-frontend
+          path: frontend/dist
+          if-no-files-found: error
+          retention-days: 7
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # TODO: confirmar se o Philo usa MySQL para os testes de integração.
+    # Se usar outro banco (ou nenhum), ajustar/remover este bloco "services".
+    services:
+      mysql:
+        image: mysql:8.0.43
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        ports:
+          - 33078:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      # TODO: confirmar o nome real da variável de conexão de teste do Philo.
+      PHILO_TEST_CONNECTION: Server=127.0.0.1;Port=33078;User ID=root;SslMode=None
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+      # TODO: caminho real da solution do Philo (ex.: backend/src/Philo.sln)
+      - run: dotnet build backend/src/Philo.sln -c Release
+      - name: Testes unitários, BDD e arquitetura
+        shell: bash
+        run: |
+          set -euo pipefail
+          # TODO: confirmar os nomes reais dos projetos de teste do Philo.
+          for suite in Units BehaviorDrivenDevelopment Architecture; do
+            dotnet test "backend/tests/Philo.Tests.$suite" -c Release --no-build --logger trx --results-directory "TestResults/$suite"
+          done
+      - name: Integração
+        run: dotnet test backend/tests/Philo.Tests -c Release --logger trx --results-directory TestResults/Integration
+      - name: Publicar API sem configurações locais
+        shell: bash
+        run: |
+          set -euo pipefail
+          # TODO: caminho real do projeto da API do Philo.
+          dotnet publish backend/src/Philo.Api -c Release --no-build -o artifacts/api
+          find artifacts/api -name 'appsettings*.json' -delete
+          rm -rf artifacts/api/.local artifacts/api/wwwroot
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: philo-test-results
+          path: TestResults
+          retention-days: 7
+      - uses: actions/upload-artifact@v6
+        with:
+          name: philo-api
+          path: artifacts/api
+          if-no-files-found: error
+          retention-days: 7
+
+  deployment-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash -n deploy/deploy.sh
+      - run: shellcheck deploy/deploy.sh
