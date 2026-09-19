@@ -1,4 +1,4 @@
-﻿namespace Philo.Domain.Enum
+namespace Philo.Domain.Enums
 {
     public enum Priority
     {

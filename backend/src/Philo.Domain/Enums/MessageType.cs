@@ -1,12 +1,8 @@
-﻿namespace Philo.Domain.Enum
+namespace Philo.Domain.Enums
 {
     public enum MessageType
     {
         Text,
-        Attachment,
-        Image,
-        Video,
-        Audio,
-        File
+        Attachment
     }
 }

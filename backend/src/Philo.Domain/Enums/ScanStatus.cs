@@ -1,11 +1,9 @@
-﻿namespace Philo.Domain.Enum
+namespace Philo.Domain.Enums
 {
     public enum ScanStatus
     {
         Pending,
-        InProgress,
-        Completed,
-        Failed,
-        Canceled
+        Clean,
+        Rejected
     }
 }

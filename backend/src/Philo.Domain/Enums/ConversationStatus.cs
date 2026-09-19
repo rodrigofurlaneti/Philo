@@ -1,10 +1,10 @@
-﻿namespace Philo.Domain.Enum
+namespace Philo.Domain.Enums
 {
     public enum ConversationStatus
     {
         Open,
-        Waiting_customer,
-        Waiting_team,
+        WaitingCustomer,
+        WaitingTeam,
         Closed
     }
 }
